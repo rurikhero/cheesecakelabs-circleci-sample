@@ -45,7 +45,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ .Branch }}
+            - v1-dependencies-{{ checksum "package.json" }}
       - run: yarn test
 
 workflows:

@@ -71,7 +71,10 @@ workflows:
   version: 2
   gdg-worflow:
     jobs:
-      - build
+      - checkout_code
+      - build:
+          requires:
+            - checkout_code
       - test:
           requires:
             - build

@@ -90,6 +90,6 @@ workflows:
       - test:
           requires:
             - build
-      - checkout_code:
+      - code_analysis:
           requires:
             - test

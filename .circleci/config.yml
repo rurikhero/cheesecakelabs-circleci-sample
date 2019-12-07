@@ -10,6 +10,21 @@ references:
         - v4-checkout-{{ .Branch }}-{{ .Revision }}
 
 jobs:
+  checkout_code:
+    docker:
+      - image: circleci/node:10
+    working_directory: ~/repo
+    steps:
+      - restore_cache:
+          keys:
+            - v1-code-{{ .Branch }}
+            - v1-code-
+      - checkout
+      - save_cache:
+          paths:
+            - .
+          key: v1-code-{{ .Branch }}
+
   build:
     docker:
       # specify the version you desire here
@@ -23,14 +38,14 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ .Branch }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - v1-code-{{ .Branch }}
+            - v1-code-
+
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "package.json" }}
 
       - run: yarn install
 
@@ -43,7 +58,10 @@ jobs:
       - image: circleci/node:10
     working_directory: ~/repo
     steps:
-      - checkout
+      - restore_cache:
+          keys:
+            - v1-code-{{ .Branch }}
+            - v1-code-
       - restore_cache:
           keys:
             - v2-dependencies-{{ checksum "package.json" }}

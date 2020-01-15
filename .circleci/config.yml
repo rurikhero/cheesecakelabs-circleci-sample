@@ -15,10 +15,23 @@ jobs:
     steps:
       - run: echo "run tests"
   release:
+    parameters:
+      custom_checkout:
+        type: string
+        default: $CIRCLE_BRANCH
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
       - run: echo "run release"
+      - run: |
+          if [ "$CIRCLE_BRANCH" = "master" ]; then
+              master
+          fi
+      - when:
+          condition: <<parameters.custom_checkout>>
+          steps:
+            - run: echo "master"
+
   deploy:
     docker:
       - image: circleci/buildpack-deps:stretch

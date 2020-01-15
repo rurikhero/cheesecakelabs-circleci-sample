@@ -1,95 +1,51 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
 version: 2
+
 references:
-  restore_repo: &restore_repo
-    restore_cache:
-      keys:
-        - v4-checkout-{{ .Branch }}-{{ .Revision }}
+  image_name: &image_name organization-name/project-name
 
 jobs:
-  checkout_code:
-    docker:
-      - image: circleci/node:10
-    working_directory: ~/repo
-    steps:
-      - restore_cache:
-          keys:
-            - v1-code-{{ .Branch }}
-            - v1-code-
-      - checkout
-      - save_cache:
-          paths:
-            - .
-          key: v1-code-{{ .Branch }}
-
   build:
     docker:
-      # specify the version you desire here
-      - image: circleci/node:10
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
-    working_directory: ~/repo
-
+      - image: circleci/buildpack-deps:stretch
     steps:
-      - restore_cache:
-          keys:
-            - v1-code-{{ .Branch }}
-            - v1-code-
-
-      - restore_cache:
-          keys:
-            - v2-dependencies-{{ checksum "package.json" }}
-
-      - run: yarn install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v2-dependencies-{{ checksum "package.json" }}
-  test:
+      - run: echo "run build"
+  tests:
     docker:
-      - image: circleci/node:10
-    working_directory: ~/repo
+      - image: circleci/buildpack-deps:stretch
     steps:
-      - restore_cache:
-          keys:
-            - v1-code-{{ .Branch }}
-            - v1-code-
-      - restore_cache:
-          keys:
-            - v2-dependencies-{{ checksum "package.json" }}
-      - run: mkdir .tmp && yarn test > .tmp/coverage.xml
-      - persist_to_workspace:
-          root: .tmp
-          paths:
-            - coverage.xml
-  code_analysis:
+      - run: echo "run tests"
+  release:
     docker:
-      - image: circleci/node:10
-    working_directory: ~/repo
+      - image: circleci/buildpack-deps:stretch
     steps:
-      - attach_workspace:
-          at: .tmp
-      - run: cat .tmp/coverage.xml
+      - run: echo "run release"
+  deploy:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - run: echo "run deploy"
 
 workflows:
   version: 2
-  gdg-worflow:
+  untagged-build:
     jobs:
-      - checkout_code
-      - build:
-          requires:
-            - checkout_code
-      - test:
+      - build
+      - tests:
           requires:
             - build
-      - code_analysis:
+      - release:
           requires:
-            - test
+            - tests
+          filters:
+            branches:
+              only:
+                - master
+                - staging
+  tagged-build:
+    jobs:
+      - deploy:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

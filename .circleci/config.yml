@@ -21,11 +21,11 @@ jobs:
       - run: echo "run release"
       - run: |
           if [ "$CIRCLE_BRANCH" = "master" ]; then
-              master
+              echo "master"
           fi
       - run: |
           if [ "$CIRCLE_BRANCH" = "staging" ]; then
-              staging
+              echo "staging"
           fi
 
   deploy:

@@ -14,20 +14,16 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     steps:
       - run: echo "run tests"
-  release:
+  release-staging:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - run: echo "run release"
-      - run: |
-          if [ "$CIRCLE_BRANCH" = "master" ]; then
-              echo "master"
-          fi
-      - run: |
-          if [ "$CIRCLE_BRANCH" = "staging" ]; then
-              echo "staging"
-          fi
-
+      - run: echo "run release-staging"
+  release-master:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - run: echo "run release-master"
   deploy:
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -42,7 +38,14 @@ workflows:
       - tests:
           requires:
             - build
-      - release:
+      - release-staging:
+          requires:
+            - tests
+          filters:
+            branches:
+              only:
+                - staging
+      - release-master:
           requires:
             - tests
           filters:

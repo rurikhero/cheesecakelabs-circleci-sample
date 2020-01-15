@@ -14,21 +14,19 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     steps:
       - run: echo "run tests"
-  release-staging:
+  release:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - run: echo "run release-staging"
-  release-master:
-    docker:
-      - image: circleci/buildpack-deps:stretch
-    steps:
-      - run: echo "run release-master"
+      - run: echo "run release"
+      - run: bash scripts/release.sh $CIRCLE_BRANCH
+
   deploy:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
-      - run: echo "run deploy $CIRCLE_BRANCH"
+      - run: echo "run deploy"
+      - run: bash scripts/deploy.sh $CIRCLE_BRANCH
 
 workflows:
   version: 2
@@ -38,20 +36,23 @@ workflows:
       - tests:
           requires:
             - build
-      - release-staging:
-          requires:
-            - tests
-          filters:
-            branches:
-              only:
-                - staging
-      - release-master:
+      - release:
           requires:
             - tests
           filters:
             branches:
               only:
                 - master
+                - staging
+                # - lab
+      - deploy:
+          requires:
+            - release
+          filters:
+            branches:
+              only:
+                - staging
+                # - lab 
   tagged-build:
     jobs:
       - deploy:

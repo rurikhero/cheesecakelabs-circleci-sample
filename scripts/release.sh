@@ -12,4 +12,5 @@ case $1 in
     ;;
     *)
         echo "release not defined"
+    ;;
 esac
